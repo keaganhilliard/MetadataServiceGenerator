@@ -716,10 +716,4 @@ private class MetadataServiceTest {
     ].join('\n')
 }
 
-function generateObjectInstatiation(name) {
-    return `${t}${t}new MetadataService.${name}();`
-}
-
 doSomeParsing(json)
-
-
