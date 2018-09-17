@@ -579,9 +579,6 @@ function generateTestClass() {
 `
 @isTest  
 private class MetadataServiceTest {    
-    /**
-     * Dummy Metadata API web service mock class (see MetadataCreateJobTest.cls for a better example)
-     **/
 	private class WebServiceMockImpl implements WebServiceMock {
 		public void doInvoke(
 			Object stub, Object request, Map<String, Object> response,
@@ -623,26 +620,18 @@ private class MetadataServiceTest {
 		}
     }
     @IsTest
-	private static void coverGeneratedCodeCRUDOperations()
-	{	
-    	// Null Web Service mock implementation
+	private static void coverGeneratedCodeCRUDOperations() {	
         System.Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
-        // Only required to workaround a current code coverage bug in the platform
         MetadataService metaDataService = new MetadataService();
-        // Invoke operations     
         Test.startTest();    
         MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
         metaDataPort.readMetadata('CustomObject', new String[]{'Account'});
         Test.stopTest();
 	}
-	
 	@IsTest
     private static void coverGeneratedCodeFileBasedOperations1() {    	
-    	// Null Web Service mock implementation
         System.Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
-        // Only required to workaround a current code coverage bug in the platform
         MetadataService metaDataService = new MetadataService();
-        // Invoke operations    
         Test.startTest();     
         MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
         metaDataPort.retrieve(null);
@@ -656,14 +645,10 @@ private class MetadataServiceTest {
         metaDataPort.cancelDeploy(null);
         Test.stopTest();
     }
-
     @IsTest
     private static void coverGeneratedCodeFileBasedOperations2() {       
-        // Null Web Service mock implementation
         System.Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
-        // Only required to workaround a current code coverage bug in the platform
         MetadataService metaDataService = new MetadataService();
-        // Invoke operations     
         Test.startTest();    
         MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
         metaDataPort.deleteMetadata(null, null);
