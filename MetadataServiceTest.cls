@@ -39,6 +39,8 @@ private class MetadataServiceTest {
                 response.put('response_x', new MetadataService.describeValueTypeResponse_element());
             else if(request instanceof MetadataService.checkRetrieveStatus_element)
                 response.put('response_x', new MetadataService.checkRetrieveStatusResponse_element());
+            else if(request instanceof MetadataService.readMetadata_element)
+                response.put('response_x', new MetadataService.readCustomObjectResponse_element());
 			return;
 		}
     }
@@ -52,6 +54,7 @@ private class MetadataServiceTest {
         // Invoke operations     
         Test.startTest();    
         MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
+        metaDataPort.readMetadata('CustomObject', new String[]{'Account'});
         Test.stopTest();
 	}
 	
@@ -1655,5 +1658,4 @@ private class MetadataServiceTest {
         new MetadataService.readWorkflowRuleResponse_element().getResult();
         Test.stopTest(); 
     }
-    
 }

@@ -6,8 +6,6 @@ let wsdl = fs.readFileSync('./metadata.wsdl').toString()
 
 if (fs.existsSync('MetadataService.cls')) fs.unlinkSync('MetadataService.cls')
 if (fs.existsSync('MetadataService.cls-meta.xml')) fs.unlinkSync('MetadataService.cls-meta.xml')
-if (fs.existsSync('./betterTypes.json')) fs.unlinkSync('./betterTypes.json')
-
 
 let json = JSON.parse(xml2json.toJson(wsdl))
 
@@ -69,7 +67,6 @@ function doSomeParsing(json) {
                 })
 
                 waitForIt.then(() => {
-                    fs.writeFileSync('betterTypes.json', JSON.stringify(betterTypes, null, '    '))
                     fs.writeFileSync('MetadataService.cls', generateService())
                     fs.writeFileSync('MetadataService.cls-meta.xml', generateMetaXML())
                     fs.writeFileSync('MetadataServiceTest.cls', generateTestClass())
@@ -620,6 +617,8 @@ private class MetadataServiceTest {
                 response.put('response_x', new MetadataService.describeValueTypeResponse_element());
             else if(request instanceof MetadataService.checkRetrieveStatus_element)
                 response.put('response_x', new MetadataService.checkRetrieveStatusResponse_element());
+            else if(request instanceof MetadataService.readMetadata_element)
+                response.put('response_x', new MetadataService.readCustomObjectResponse_element());
 			return;
 		}
     }
@@ -633,6 +632,7 @@ private class MetadataServiceTest {
         // Invoke operations     
         Test.startTest();    
         MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
+        metaDataPort.readMetadata('CustomObject', new String[]{'Account'});
         Test.stopTest();
 	}
 	
@@ -711,8 +711,7 @@ private class MetadataServiceTest {
     }, []),
 `        Test.stopTest(); 
     }`,
-`    
-}
+`}
 `
     ].join('\n')
 }
