@@ -69,6 +69,8 @@ function doSomeParsing(json) {
                 waitForIt.then(() => {
                     fs.writeFileSync('MetadataService.cls', generateService())
                     fs.writeFileSync('MetadataService.cls-meta.xml', generateMetaXML())
+                    fs.writeFileSync('MetadataServiceExtension.cls', generateExtension())
+                    fs.writeFileSync('MetadataServiceExtension.cls-meta.xml', generateMetaXML())
                     fs.writeFileSync('MetadataServiceTest.cls', generateTestClass())
                     fs.writeFileSync('MetadataServiceTest.cls-meta.xml', generateMetaXML())
                 })
@@ -81,13 +83,23 @@ let log = false
 
 function generateService() {
     let newClass = []
-    newClass.push(`public class ${json.definitions.service.name} {`)
+    newClass.push(`public virtual class MetadataService {`)
     newClass.push(`${t}public static final String NS = '${json.definitions.targetNamespace}';`)
     newClass.push(`${t}public static final String F = 'false';`)
     newClass.push(`${t}public static final String T = 'true';`)
     newClass = [...newClass, ...Object.keys(betterTypes).reduce((aggr, key) => {
         return [...aggr, ...generateClassArrayFromBetterType(betterTypes[key])]
     }, [])]
+    newClass.push('}')
+    return newClass.join('\n')
+}
+
+function generateExtension() {
+    let newClass = []
+    newClass.push(`public class MetadataServiceExtension extends MetadataService {`)
+    newClass.push(`${t}public static final String NS = '${json.definitions.targetNamespace}';`)
+    newClass.push(`${t}public static final String F = 'false';`)
+    newClass.push(`${t}public static final String T = 'true';`)
     newClass = [...newClass, ...generateMetadataPortArray()]
     newClass = [...newClass, ...generateInterfaceArray()]
     newClass = [...newClass, ...Object.keys(betterTypes).reduce((aggr, key) => {
@@ -486,12 +498,12 @@ function generateMetadataPortArray() {
         `${t}${t}${t}response_x = response_map_x.get('response_x');`,
         `${t}${t}${t}return response_x.result;`,
         `${t}${t}}`,
-        `${t}${t}public MetadataService.IReadResult readMetadata(String type_x,String[] fullNames) {`,
+        `${t}${t}public MetadataServiceExtension.IReadResult readMetadata(String type_x,String[] fullNames) {`,
         `${t}${t}${t}MetadataService.readMetadata_element request_x = new MetadataService.readMetadata_element();`,
         `${t}${t}${t}request_x.type_x = type_x;`,
         `${t}${t}${t}request_x.fullNames = fullNames;`,
         `${t}${t}${t}MetadataService.IReadResponseElement response_x;`,
-        `${t}${t}${t}Map<String, MetadataService.IReadResponseElement> response_map_x = new Map<String, MetadataService.IReadResponseElement>();`,
+        `${t}${t}${t}Map<String, Extension.IReadResponseElement> response_map_x = new Map<String, MetadataServiceExtension.IReadResponseElement>();`,
         `${t}${t}${t}response_map_x.put('response_x', response_x);`,
         `${t}${t}${t}WebServiceCallout.invoke(`,
         `${t}${t}${t}${t}this,`,
@@ -503,7 +515,7 @@ function generateMetadataPortArray() {
         `${t}${t}${t}${t}'readMetadata',`,
         `${t}${t}${t}${t}NS,`,
         `${t}${t}${t}${t}'readMetadataResponse',`,
-        `${t}${t}${t}${t}'MetadataService.read' + type_x + 'Response_element'}`,
+        `${t}${t}${t}${t}'MetadataServiceExtension.read' + type_x + 'Response_element'}`,
         `${t}${t}${t});`,
         `${t}${t}${t}response_x = response_map_x.get('response_x');`,
         `${t}${t}${t}return response_x.getResult();`,
@@ -615,7 +627,7 @@ private class MetadataServiceTest {
             else if(request instanceof MetadataService.checkRetrieveStatus_element)
                 response.put('response_x', new MetadataService.checkRetrieveStatusResponse_element());
             else if(request instanceof MetadataService.readMetadata_element)
-                response.put('response_x', new MetadataService.readCustomObjectResponse_element());
+                response.put('response_x', new MetadataServiceExtension.readCustomObjectResponse_element());
 			return;
 		}
     }
@@ -624,7 +636,7 @@ private class MetadataServiceTest {
         System.Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
         MetadataService metaDataService = new MetadataService();
         Test.startTest();    
-        MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
+        MetadataServiceExtension.MetadataPort metaDataPort = new MetadataServiceExtension.MetadataPort();
         metaDataPort.readMetadata('CustomObject', new String[]{'Account'});
         Test.stopTest();
 	}
@@ -633,7 +645,7 @@ private class MetadataServiceTest {
         System.Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
         MetadataService metaDataService = new MetadataService();
         Test.startTest();     
-        MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
+        MetadataServiceExtension.MetadataPort metaDataPort = new MetadataServiceExtension.MetadataPort();
         metaDataPort.retrieve(null);
         metaDataPort.checkDeployStatus(null, false);
         metaDataPort.listMetadata(null, null);
@@ -650,7 +662,7 @@ private class MetadataServiceTest {
         System.Test.setMock(WebServiceMock.class, new WebServiceMockImpl());
         MetadataService metaDataService = new MetadataService();
         Test.startTest();    
-        MetadataService.MetadataPort metaDataPort = new MetadataService.MetadataPort();
+        MetadataServiceExtension.MetadataPort metaDataPort = new MetadataServiceExtension.MetadataPort();
         metaDataPort.deleteMetadata(null, null);
         metaDataPort.upsertMetadata(null);
         metaDataPort.createMetadata(null);
@@ -663,12 +675,12 @@ private class MetadataServiceTest {
     private static void coverGeneratedCodeTypes() {    	       
         // Reference types
         Test.startTest();
-        new MetadataService();`,
+        new MetadataServiceExtension();`,
         ...Object.keys(betterTypes).map(key => `${t}${t}new MetadataService.${betterTypes[key].name}();`),
         ...Object.keys(betterTypes).reduce((aggr, key) => {
             if (betterTypes[key].extends == 'Metadata' || betterTypes[key].extends == 'MetadataWithContent') {
-                aggr.push(`${t}${t}new MetadataService.Read${betterTypes[key].originalName}Result();`)
-                aggr.push(`${t}${t}new MetadataService.read${betterTypes[key].originalName}Response_element();`)
+                aggr.push(`${t}${t}new MetadataServiceExtension.Read${betterTypes[key].originalName}Result();`)
+                aggr.push(`${t}${t}new MetadataServiceExtension.read${betterTypes[key].originalName}Response_element();`)
             }
             return aggr
         }, []),
@@ -679,7 +691,7 @@ private class MetadataServiceTest {
         Test.startTest();`,
     ...Object.keys(betterTypes).reduce((aggr, key) => {
         if (betterTypes[key].extends == 'Metadata' || betterTypes[key].extends == 'MetadataWithContent') {
-            aggr.push(`${t}${t}new MetadataService.Read${betterTypes[key].originalName}Result().getRecords();`)
+            aggr.push(`${t}${t}new MetadataServiceExtension.Read${betterTypes[key].originalName}Result().getRecords();`)
         }
         return aggr
     }, []),
@@ -690,7 +702,7 @@ private class MetadataServiceTest {
         Test.startTest();`,
     ...Object.keys(betterTypes).reduce((aggr, key) => {
         if (betterTypes[key].extends == 'Metadata' || betterTypes[key].extends == 'MetadataWithContent') {
-            aggr.push(`${t}${t}new MetadataService.read${betterTypes[key].originalName}Response_element().getResult();`)
+            aggr.push(`${t}${t}new MetadataServiceExtension.read${betterTypes[key].originalName}Response_element().getResult();`)
         }
         return aggr
     }, []),
